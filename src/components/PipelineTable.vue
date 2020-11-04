@@ -3,10 +3,10 @@
     <v-data-table
         :headers="headers"
         :items="pipelines"
-        item-key="name"
+        :sort-by.sync="sortBy"
+        :sort-desc.sync="sortDesc"
         class="elevation-1"
         show-select
-        sort-by="time"
         v-model="selected"
     >
       <template v-slot:top>
@@ -28,99 +28,7 @@
                 hide-details="auto"
             ></v-text-field>
           </v-col>
-          <v-dialog
-              v-model="dialogNew"
-              max-width="500px"
-          >
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                  icon
-                  v-bind="attrs"
-                  v-on="on"
-              >
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
-            </template>
-            <v-card>
-              <v-card-title>
-                <span class="headline">New Pipeline</span>
-              </v-card-title>
-
-              <v-card-text>
-                <v-container>
-                  <v-row>
-                    <v-col
-                        cols="12"
-                        sm="6"
-                        md="4"
-                    >
-                      <v-text-field
-                          v-model="createdItem.name"
-                          label="name"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col
-                        cols="12"
-                        sm="6"
-                        md="4"
-                    >
-                      <v-text-field
-                          v-model="createdItem.status"
-                          label="statue"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col
-                        cols="12"
-                        sm="6"
-                        md="4"
-                    >
-                      <v-text-field
-                          v-model="createdItem.stage"
-                          label="stage"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col
-                        cols="12"
-                        sm="6"
-                        md="4"
-                    >
-                      <v-text-field
-                          v-model="createdItem.owner"
-                          label="owner"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col
-                        cols="12"
-                        sm="6"
-                        md="4"
-                    >
-                      <v-text-field
-                          v-model="createdItem.time"
-                          label="time"
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                    color="blue darken-1"
-                    text
-                    @click="closeNew"
-                >
-                  Cancel
-                </v-btn>
-                <v-btn
-                    color="blue darken-1"
-                    text
-                    @click="saveNew"
-                >
-                  Save
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+          <dialog-new @closeNew="closeNew" @saveNew="saveNew"></dialog-new>
           <v-dialog v-model="dialogView" max-width="500px">
             <v-card>
               <v-card-title class="headline">View Pipeline</v-card-title>
@@ -136,7 +44,7 @@
               <v-card-title class="headline">Delete Pipeline</v-card-title>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
+                <v-btn color="blue darken-1" text @click="confirmDelete">OK</v-btn>
                 <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
                 <v-spacer></v-spacer>
               </v-card-actions>
@@ -226,8 +134,14 @@
 </template>
 
 <script>
+import DialogNew from './DialogNew.vue'
+//import DialogView from './DialogView.vue'
 export default {
   name: 'PipelineTable',
+  components: {
+    DialogNew,
+    //DialogView
+  },
   data() {
     return {
       actions: [
@@ -235,7 +149,6 @@ export default {
         { text: 'Delete', icon: 'mdi-close', click: this.deleteItem }
       ],
       dialogDelete: false,
-      dialogNew: false,
       dialogView: false,
       headers: [
         { text: 'Name', align: 'left', sortable: true, value: 'name' },
@@ -245,24 +158,12 @@ export default {
         { text: 'Time', align: 'left', sortable: true, value: 'time' },
         { text: 'Actions', align: 'center', value: 'actions', sortable: false }
       ],
-      defaultItem: {
-        name: '',
-        statue: '',
-        stage: '',
-        owner: '',
-        time: ''
-      },
-      createdIndex: -1,
-      createdItem: {
-        name: '',
-        statue: '',
-        stage: '',
-        owner: '',
-        time: ''
-      },
+      index: -1,
       pipelines: [],
       search: '',
       selected: [],
+      sortBy: 'time',
+      sortDesc: true,
       stage: {
         build: 2,
         test: 3,
@@ -272,13 +173,6 @@ export default {
         fail: 'mdi-close-circle-outline',
         pass: 'mdi-check-circle-outline',
         running: 'mdi-rotate-left'
-      },
-      viewedItem: {
-        name: '',
-        statue: '',
-        stage: '',
-        owner: '',
-        time: ''
       }
     }
   },
@@ -311,47 +205,34 @@ export default {
         }
       ]
     },
-    createItem (item) {
-      this.createdIndex = this.pipelines.indexOf(item)
-      this.createdItem = Object.assign({}, item)
-      this.dialogNew = true
-    },
     deleteItem (item) {
-      this.createdIndex = this.pipelines.indexOf(item)
-      this.createdItem = Object.assign({}, item)
+      this.index = this.pipelines.indexOf(item)
       this.dialogDelete = true
     },
-    deleteItemConfirm () {
-      this.pipelines.splice(this.createdIndex, 1)
-      this.closeDelete()
-    },
     viewItem (item) {
-      this.viewedItem = Object.assign({}, item)
+      Object.assign({}, item)
       this.dialogView = true
-    },
-    closeNew () {
-      this.dialogNew = false
-      this.$nextTick(() => {
-        this.createdItem = Object.assign({}, this.defaultItem)
-        this.createdIndex = -1
-      })
     },
     closeDelete () {
       this.dialogDelete = false
       this.$nextTick(() => {
-        this.createdItem = Object.assign({}, this.defaultItem)
-        this.createdIndex = -1
+        this.index = -1
+      })
+    },
+    closeNew () {
+      this.$nextTick(() => {
+        this.index = -1
       })
     },
     closeView () {
       this.dialogView = false
     },
-    saveNew () {
-      if (this.createdIndex > -1) {
-        Object.assign(this.pipelines[this.createdIndex], this.createdItem)
-      } else {
-        this.pipelines.push(this.createdItem)
-      }
+    confirmDelete () {
+      this.pipelines.splice(this.index, 1)
+      this.closeDelete()
+    },
+    saveNew(item) {
+      this.pipelines.push(item)
       this.closeNew()
     },
     getStage (item) {
@@ -359,15 +240,12 @@ export default {
     },
     getStatus (item) {
       return this.status[item.status]
-    },
+    }
   },
   watch: {
-    dialogNew (val) {
-      val || this.closeNew()
-    },
     dialogDelete (val) {
       val || this.closeDelete()
-    },
+    }
   }
 }
 </script>

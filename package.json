@@ -1,6 +1,6 @@
 {
-  "name": "vuetify-table",
-  "version": "0.0.1",
+  "name": "vuedemo",
+  "version": "0.0.2",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -11,7 +11,8 @@
     "core-js": "^3.6.5",
     "leader-line": "^1.0.5",
     "vue": "^2.6.11",
-    "vuetify": "^2.2.11"
+    "vuetify": "^2.2.11",
+    "webpack-dev-server": "^3.11.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
