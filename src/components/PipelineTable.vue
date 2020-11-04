@@ -227,7 +227,7 @@
 
 <script>
 export default {
-  name: 'VuetifyTable',
+  name: 'PipelineTable',
   data() {
     return {
       actions: [
