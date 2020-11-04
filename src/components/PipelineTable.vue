@@ -7,7 +7,7 @@
         :sort-desc.sync="sortDesc"
         class="elevation-1"
         show-select
-        v-model="selected"
+        v-model="selects"
     >
       <template v-slot:top>
         <v-toolbar
@@ -28,13 +28,13 @@
                 hide-details="auto"
             ></v-text-field>
           </v-col>
-          <dialog-new @closeNew="closeNew" @saveNew="saveNew"></dialog-new>
+          <dialog-template @closeTemplate="closeTemplate" @createPipeline="createPipeline"></dialog-template>
           <v-dialog v-model="dialogView" max-width="500px">
             <v-card>
               <v-card-title class="headline">View Pipeline</v-card-title>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="closeView">Close</v-btn>
+                <v-btn text @click="closeView">Close</v-btn>
                 <v-spacer></v-spacer>
               </v-card-actions>
             </v-card>
@@ -44,8 +44,8 @@
               <v-card-title class="headline">Delete Pipeline</v-card-title>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="confirmDelete">OK</v-btn>
-                <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
+                <v-btn text @click="closeDelete">Cancel</v-btn>
+                <v-btn text @click="confirmDelete">OK</v-btn>
                 <v-spacer></v-spacer>
               </v-card-actions>
             </v-card>
@@ -134,12 +134,14 @@
 </template>
 
 <script>
-import DialogNew from './DialogNew.vue'
+//import DialogDelete from './DialogDelete.vue'
+import DialogTemplate from './DialogTemplate.vue'
 //import DialogView from './DialogView.vue'
 export default {
   name: 'PipelineTable',
   components: {
-    DialogNew,
+    //DialogDelete,
+    DialogTemplate,
     //DialogView
   },
   data() {
@@ -161,7 +163,7 @@ export default {
       index: -1,
       pipelines: [],
       search: '',
-      selected: [],
+      selects: [],
       sortBy: 'time',
       sortDesc: true,
       stage: {
@@ -219,7 +221,7 @@ export default {
         this.index = -1
       })
     },
-    closeNew () {
+    closeTemplate () {
       this.$nextTick(() => {
         this.index = -1
       })
@@ -231,9 +233,9 @@ export default {
       this.pipelines.splice(this.index, 1)
       this.closeDelete()
     },
-    saveNew(item) {
+    createPipeline(item) {
       this.pipelines.push(item)
-      this.closeNew()
+      this.closeTemplate()
     },
     getStage (item) {
       return this.stage[item.stage]
