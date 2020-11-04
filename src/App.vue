@@ -1,15 +1,15 @@
 <template>
   <v-app>
-    <VuetifyTable/>
+    <PipelineTable/>
   </v-app>
 </template>
 
 <script>
-import VuetifyTable from './components/VuetifyTable.vue'
+import PipelineTable from './components/PipelineTable.vue'
 export default {
   name: 'App',
   components: {
-    VuetifyTable
+    PipelineTable
   }
 }
 </script>
